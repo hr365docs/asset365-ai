@@ -20,36 +20,54 @@ const calloutProps = {
 
 const CustomPlans = ({ AppName }) => {
   const [openStandardpopup, setOpenStandardpopup] = React.useState(false);
-  const [isFromIndia, setIsFromIndia] = React.useState(false);
-  const SiteName = React.useContext(MyContext);
-
-  React.useEffect(() => {
-    // 1. Initial cached check so UI doesn't flicker
+  
+  // Synchronous initial state check from localStorage
+  const [isFromIndia, setIsFromIndia] = React.useState(() => {
     try {
-      const cachedIp = localStorage.getItem("ipInfo");
-      if (cachedIp) {
-        const parsed = JSON.parse(cachedIp);
-        if (parsed?.country === "IN") {
-          setIsFromIndia(true);
-        }
+      const cached = localStorage.getItem("ipInfo");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        return parsed?.country === "IN";
       }
     } catch (e) {}
+    return false;
+  });
 
-    getData();
-    const currentUrl = window.location.href.toLowerCase();
+  const SiteName = React.useContext(MyContext);
 
-    const shouldRunIpInfo =
-      currentUrl.includes("sharepoint-contract-management-clm-365") ||
-      currentUrl.includes("clm365") ||
-      currentUrl.includes("clm") ||
-      currentUrl.includes("contract-management") ||
-      currentUrl.includes("contract management") ||
-      currentUrl.includes("asset") ||
-      currentUrl.includes("asset-management");
+  const tokenCount = [
+    "25241198af9c52",
+    "843b85132fe7ea",
+    "6a981cfd695563",
+    "1840068c4be068",
+  ];
 
-    if (shouldRunIpInfo) {
-      getIpInfo();
+  async function getIpInfo() {
+    for (const token of tokenCount) {
+      try {
+        const response = await fetch(`https://ipinfo.io/json?token=${token}`);
+        if (!response.ok) continue;
+
+        const data = await response.json();
+        if (data && !data.error && data.status !== 429) {
+          const fromIndia = data.country === "IN";
+          localStorage.setItem("ipInfo", JSON.stringify(data));
+          setIsFromIndia(fromIndia);
+          // Rerender DOM immediately with fresh location
+          getData(fromIndia);
+          return data;
+        }
+      } catch (error) {}
     }
+    return null;
+  }
+
+  React.useEffect(() => {
+    // 1. Initial render with current/cached state
+    getData(isFromIndia);
+
+    // 2. Fetch live IP
+    getIpInfo();
 
     let textvarcolor;
     let bgmainvarcolor;
@@ -57,6 +75,7 @@ const CustomPlans = ({ AppName }) => {
     let darkbtnvarcolor;
     let btnBgColor;
     let topborder;
+
     if (SiteName === "HR365") {
       textvarcolor = "#1f39d4";
       bgmainvarcolor = "";
@@ -81,37 +100,8 @@ const CustomPlans = ({ AppName }) => {
     document.documentElement.style.setProperty("--top-for-line", topborder);
   }, []);
 
-  const tokenCount = [
-    "25241198af9c52",
-    "843b85132fe7ea",
-    "6a981cfd695563",
-    "1840068c4be068",
-  ];
-
-  async function getIpInfo() {
-    for (const token of tokenCount) {
-      try {
-        const response = await fetch(`https://ipinfo.io/json?token=${token}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-
-        if (data.error || data.status === 429) {
-          throw new Error("Token limit exceeded");
-        }
-
-        const fromIndia = data.country === "IN";
-        setIsFromIndia(fromIndia);
-        localStorage.setItem("ipInfo", JSON.stringify(data));
-        return data;
-      } catch (error) {
-        console.error(`Token failed: ${token}`, error.message);
-      }
-    }
-    return null;
-  }
-
-  function formatDynamicFeatureText(feature, plan) {
-    if (!isFromIndia) return feature;
+  function formatDynamicFeatureText(feature, plan, fromIndia) {
+    if (!fromIndia) return feature;
 
     const addOn = plan?.AddOns?.[0];
     const hasINRAddon = addOn && (addOn.monthlyINR || addOn.priceINR);
@@ -140,7 +130,7 @@ const CustomPlans = ({ AppName }) => {
     return updated;
   }
 
-  async function getData() {
+  async function getData(activeIsFromIndia = isFromIndia) {
     const showPriceFor = "Standard";
     try {
       let plans;
@@ -197,7 +187,7 @@ const CustomPlans = ({ AppName }) => {
         parsedData = parsedData.filter((plan) => plan.title !== "Standard");
       }
 
-      // Filter out empty placeholder tiers (e.g. Asset 365's empty Plus tier)
+      // Filter out empty placeholder tiers
       const validData = parsedData.filter(
         (item) =>
           (item.price !== undefined &&
@@ -220,7 +210,7 @@ const CustomPlans = ({ AppName }) => {
               const isContactus = plan.isContactus === "Yes";
               const isFree = plan.price == 0;
               const isPromoPrice = plan.isPromoPrice == "Yes";
-              const showINR = isFromIndia && Boolean(plan.priceINR);
+              const showINR = activeIsFromIndia && Boolean(plan.priceINR);
               const displayINRPrice = Number(plan.priceINR).toLocaleString("en-IN");
 
               return `
@@ -301,7 +291,7 @@ const CustomPlans = ({ AppName }) => {
                 <ul class="plan-features">
                   ${plan.plans
                     .map((feature) => {
-                      const displayFeature = formatDynamicFeatureText(feature, plan);
+                      const displayFeature = formatDynamicFeatureText(feature, plan, activeIsFromIndia);
                       return displayFeature
                         ? `<li><span class="tick-icon"><div class="checkIconandFeature"><span class="checkmarkicon">&#10003;</span></span><span class="helpdesktoolTipStyles">${displayFeature}</span></div></li>`
                         : "";
@@ -341,7 +331,7 @@ const CustomPlans = ({ AppName }) => {
         const addToCartButton = document.getElementById(`std${index + 1}`);
         if (addToCartButton) {
           addToCartButton.addEventListener("click", () =>
-            getTxID(plan, LiteUserBased)
+            getTxID(plan, LiteUserBased, activeIsFromIndia)
           );
         }
       });
@@ -436,8 +426,8 @@ const CustomPlans = ({ AppName }) => {
     if (enterprisePopup) enterprisePopup.style.display = "none";
   }
 
-  async function getTxID(plan, LiteUserBased) {
-    const useINR = isFromIndia && Boolean(plan?.priceINR);
+  async function getTxID(plan, LiteUserBased, activeIsFromIndia = isFromIndia) {
+    const useINR = activeIsFromIndia && Boolean(plan?.priceINR);
     const mainPrice = useINR ? (plan.TotalPriceINR || plan.priceINR) : plan?.TotalPrice;
 
     let staticbody = {
