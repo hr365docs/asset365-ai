@@ -227,7 +227,7 @@
 .plan-card {
   position: relative;
   padding: 2vw 1vw;
-  width: calc(25% - 2vw);
+   width: calc(28% - 1vw);
   border-radius: 10px;
   background: white;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -538,7 +538,7 @@
 .plan-card {
   position: relative;
   /* padding: 3.5vw 2vw !important; */
-  width: calc(26% - 2vw);
+  width: calc(28% - 1vw);
   border-radius: 0px;
   background: white;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
