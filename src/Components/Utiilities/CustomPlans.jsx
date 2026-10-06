@@ -183,7 +183,7 @@ const CustomPlans = ({ AppName }) => {
       const appNameLower = AppName?.trim()?.toLowerCase();
 
       // Only remove Standard for non-Helpdesk and non-Asset products
-      if (appNameLower !== "helpdesk 365" && !appNameLower.includes("asset")) {
+      if (appNameLower !== "helpdesk 365") {
         parsedData = parsedData.filter((plan) => plan.title !== "Standard");
       }
 

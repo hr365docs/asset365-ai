@@ -25,15 +25,82 @@ import ComparisonSection from './ComparisonSection';
 import CLMClient from './Utiilities/CLMClient';
 import GlobalFooter from './GlobalMultiple/GlobalFooter';
 import OverviewExpense365 from './GlobalMultiple/OverviewExpense365';
+const getInitialIsFromIndia = () => {
+  try {
+    const cachedIp = localStorage.getItem("ipInfo");
+    if (cachedIp) {
+      const parsed = JSON.parse(cachedIp);
+      return parsed?.country === "IN";
+    }
+  } catch (e) { }
+  return false;
+};
 function Asset365ai() {
+      const [isFromIndia, setIsFromIndia] = useState(getInitialIsFromIndia);
+  const IpTokenCount = [
+    "25241198af9c52",
+    "843b85132fe7ea",
+    "6a981cfd695563",
+    "1840068c4be068"
+  ];
+  useEffect(() => {
+    async function checkLocation() {
+      // 1. Check ipinfo.io
+      for (let i = 0; i < IpTokenCount.length; i++) {
+        const token = IpTokenCount[i];
+        try {
+          const response = await fetch(`https://ipinfo.io/json?token=${token}`);
+          if (!response.ok || response.status === 429) continue;
+          const data = await response.json();
+          if (data && data.country && !data.error && data.status !== 429) {
+            const fromIndia = data.country === "IN";
+            setIsFromIndia(fromIndia);
+            localStorage.setItem("ipInfo", JSON.stringify(data));
+            return;
+          }
+        } catch (error) { }
+      }
+
+      // 2. Fallback A: ipapi.co
+      try {
+        const response = await fetch("https://ipapi.co/json/");
+        if (response.ok) {
+          const data = await response.json();
+          const code = data?.country_code || data?.country;
+          if (code) {
+            const fromIndia = code === "IN";
+            setIsFromIndia(fromIndia);
+            localStorage.setItem("ipInfo", JSON.stringify({ country: code }));
+            return;
+          }
+        }
+      } catch (e) { }
+
+      // 3. Fallback B: geojs.io
+      try {
+        const response = await fetch("https://get.geojs.io/v1/ip/country.json");
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.country) {
+            const fromIndia = data.country === "IN";
+            setIsFromIndia(fromIndia);
+            localStorage.setItem("ipInfo", JSON.stringify({ country: data.country }));
+            return;
+          }
+        }
+      } catch (e) { }
+    }
+
+    checkLocation();
+  }, []);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 767);
     const featuresEndtoEnd = [
         {
             title: "AI-Powered Asset Tracking ",
             desc: "Automatically organize asset information, identify asset details, and improve visibility with AI-powered asset management capabilities.",
-            icon : (<>
+            icon: (<>
                 <div class="feature-icon fi-teal"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg></div></>)
-            
+
         },
         {
             title: "Automated Asset Workflows ",
@@ -42,7 +109,7 @@ function Asset365ai() {
                 <>
                     <div class="feature-icon fi-orange"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div></>
             )
-            
+
         },
         {
             title: "Centralized Asset Inventory Management ",
@@ -51,14 +118,14 @@ function Asset365ai() {
                 <>
                     <div class="feature-icon fi-purple"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></div></>
             )
-            
+
         },
         {
             title: "Audit Logs & Activity Tracking ",
             desc: "Maintain complete visibility into asset activities with detailed audit records. Track system changes, user actions, and asset movement history to support governance, accountability, and compliance requirements.",
             icon: (<><div class="feature-icon fi-green"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
             </>)
-            
+
         },
         {
             title: "Complete Asset Lifecycle Management",
@@ -67,7 +134,7 @@ function Asset365ai() {
                 <><div class="feature-icon fi-gold"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
                 </>
             )
-           
+
         },
         {
             title: "Reporting & Analytics",
@@ -77,9 +144,9 @@ function Asset365ai() {
                     <div class="feature-icon fi-navy"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div>
                 </>
             )
-            
+
         },
-        
+
     ];
     const dataIntegration = [
         {
@@ -107,7 +174,7 @@ function Asset365ai() {
             desc: "Lets you create custom apps that fit your asset management needs, helping teams track assets, manage updates, and work more efficiently..",
             img: "https://ik.imagekit.io/apps365/Lp-pages/Powerapps-logo.svg.webp"
         },
-         {
+        {
             title: "Power BI",
             desc: "Transform asset data into visual dashboards and reports to understand inventory trends, utilization, ownership, and lifecycle insights. ",
             img: "https://ik.imagekit.io/apps365/Apps365/HD/1.webp"
@@ -198,7 +265,7 @@ function Asset365ai() {
         {
             title: `3. Do we need to migrate all our existing asset data to start using Asset 365 AI?`,
             content: `No. Organizations can import existing asset information and gradually move from spreadsheets or legacy systems into Asset 365 AI based on their requirements.`
-        }, 
+        },
         {
             title: '4. Is Asset 365 AI only suitable for IT assets?',
             content: `Asset 365 AI can manage various asset types including IT hardware, software assets, equipment, inventory, and business resources. Organizations can configure asset categories based on their needs.`
@@ -261,51 +328,53 @@ function Asset365ai() {
         },
         {
             title: '19. Which currency are the prices listed in?',
-            content: `All prices are listed in USD.`
+            content: isFromIndia
+                ? 'All prices are listed in INR.'
+                : 'All prices are listed in USD.'
         }
     ];
-    
+
     const tabs = [
         {
             id: 6, title: 'AI Powered', Heading: 'Manage Assets Smarter With AI-Powered Intelligence', content: (
                 <ul>
                     <li>
-                        Automatically categorize and organize asset information to improve visibility and reduce manual effort.    
+                        Automatically categorize and organize asset information to improve visibility and reduce manual effort.
                     </li>
                     <li>
-                        Use AI-powered insights to identify asset details, ownership information, and lifecycle status faster.  
+                        Use AI-powered insights to identify asset details, ownership information, and lifecycle status faster.
                     </li>
                     <li>
                         Generate intelligent summaries and recommendations to help teams make better asset management decisions.
                     </li>
                     <li>
-                        Automate repetitive asset management tasks, notifications, and routine workflows. 
+                        Automate repetitive asset management tasks, notifications, and routine workflows.
                     </li>
                     <li id='Comparison'>
-                        Use AI capabilities with Microsoft 365 to access relevant asset information and improve operational efficiency.  
+                        Use AI capabilities with Microsoft 365 to access relevant asset information and improve operational efficiency.
                     </li>
 
                 </ul>
             ),
-            image: 'https://ik.imagekit.io/apps365/Lp-pages/Asset-AI-Powered.png'  
+            image: 'https://ik.imagekit.io/apps365/Lp-pages/Asset-AI-Powered.png'
         },
         {
             id: 1, title: 'Microsoft Ecosystem', Heading: 'Built Natively for Microsoft 365', content: (
                 <ul>
                     <li>
-                        Manage assets within the Microsoft ecosystem using SharePoint, Microsoft 365, and Teams.   
+                        Manage assets within the Microsoft ecosystem using SharePoint, Microsoft 365, and Teams.
                     </li>
                     <li>
-                       Keep asset information centralized while leveraging your existing Microsoft 365 environment.    
+                        Keep asset information centralized while leveraging your existing Microsoft 365 environment.
                     </li>
                     <li>
-                       Connect asset tracking with Microsoft tools your teams already use.   
+                        Connect asset tracking with Microsoft tools your teams already use.
                     </li>
                     <li>
-                       Maintain secure access with Microsoft permissions, authentication, and role-based controls. 
+                        Maintain secure access with Microsoft permissions, authentication, and role-based controls.
                     </li>
                     <li>
-                        Improve collaboration between IT, operations, and business teams. 
+                        Improve collaboration between IT, operations, and business teams.
                     </li>
                 </ul>
             ),
@@ -315,19 +384,19 @@ function Asset365ai() {
             id: 2, title: 'Asset Management', Heading: 'Complete Visibility Into Your Asset Lifecycle', content: (
                 <ul>
                     <li>
-                        Track hardware, software, inventory, ownership, and asset status from one centralized platform.     
+                        Track hardware, software, inventory, ownership, and asset status from one centralized platform.
                     </li>
                     <li>
-                        Manage asset assignments, returns, warranties, and lifecycle changes with better visibility.   
+                        Manage asset assignments, returns, warranties, and lifecycle changes with better visibility.
                     </li>
                     <li>
-                        Maintain accurate asset records with structured tracking and reporting.    
+                        Maintain accurate asset records with structured tracking and reporting.
                     </li>
                     <li>
-                        Monitor asset utilization and improve decision-making with real-time information.  
+                        Monitor asset utilization and improve decision-making with real-time information.
                     </li>
                     <li>
-                        Manage your complete asset lifecycle from acquisition to retirement. 
+                        Manage your complete asset lifecycle from acquisition to retirement.
                     </li>
                 </ul>
             ), image: 'https://ik.imagekit.io/apps365/Lp-pages/Asset-Management-tab.png'
@@ -336,19 +405,19 @@ function Asset365ai() {
             id: 3, title: 'Easy to Use', Heading: ' Simplify Asset Tracking for Every Team', content: (
                 <ul>
                     <li>
-                        Give teams an intuitive interface to search, manage, and update asset information.    
+                        Give teams an intuitive interface to search, manage, and update asset information.
                     </li>
                     <li>
-                        Quickly find asset details including ownership, location, status, and history. 
+                        Quickly find asset details including ownership, location, status, and history.
                     </li>
                     <li>
                         Reduce dependency on spreadsheets and manual tracking processes.
                     </li>
                     <li>
-                        Enable employees and administrators to manage assets with minimal training.  
+                        Enable employees and administrators to manage assets with minimal training.
                     </li>
                     <li>
-                        Improve productivity with a familiar Microsoft 365 experience. 
+                        Improve productivity with a familiar Microsoft 365 experience.
                     </li>
                 </ul>
             ), image: 'https://ik.imagekit.io/apps365/Lp-pages/Asset-AI-Powered.png'
@@ -357,19 +426,19 @@ function Asset365ai() {
             id: 4, title: 'Workflow Automation', Heading: 'Automate Asset Management Workflows', content: (
                 <ul>
                     <li>
-                     Automate asset assignment, approval, notification, and tracking processes.  
+                        Automate asset assignment, approval, notification, and tracking processes.
                     </li>
                     <li>
-                       Create workflows for asset requests, approvals, returns, and lifecycle updates.  
+                        Create workflows for asset requests, approvals, returns, and lifecycle updates.
                     </li>
                     <li>
-                        Receive alerts for warranties, renewals, and important asset milestones.  
+                        Receive alerts for warranties, renewals, and important asset milestones.
                     </li>
                     <li>
-                        Reduce manual follow-ups with automated notifications and reminders.  
+                        Reduce manual follow-ups with automated notifications and reminders.
                     </li>
                     <li>
-                        Improve operational control with standardized asset processes. 
+                        Improve operational control with standardized asset processes.
                     </li>
                 </ul>
             ),
@@ -379,21 +448,21 @@ function Asset365ai() {
             id: 5, title: 'Enterprise-Grade Security', Heading: 'Secure Asset Management Inside Microsoft 365', content: (
                 <ul>
                     <li>
-                        Keep asset data protected within your Microsoft 365 environment.  
+                        Keep asset data protected within your Microsoft 365 environment.
                     </li>
                     <li>
-                        Use Microsoft security, permissions, and access controls for better governance.     
+                        Use Microsoft security, permissions, and access controls for better governance.
                     </li>
                     <li>
-                        Maintain visibility into asset records with controlled user access.  
-                    </li> 
-                    <li>
-                        Support compliance requirements with structured data management and reporting.    
+                        Maintain visibility into asset records with controlled user access.
                     </li>
                     <li>
-                        Protect critical asset information with enterprise-grade security standards.    
+                        Support compliance requirements with structured data management and reporting.
                     </li>
-                   
+                    <li>
+                        Protect critical asset information with enterprise-grade security standards.
+                    </li>
+
                 </ul>
             ),
             image: 'https://ik.imagekit.io/apps365/Lp-pages/Asset-Management-tab.png'
@@ -408,56 +477,56 @@ function Asset365ai() {
         //     text : "Centralized Expense Management Hub"
         // },
         {
-            image : "https://ik.imagekit.io/cubiclogics/Helpdesk-LP/AI%20Copilot%20Assistance.svg",
-            text : "AI-Powered"
+            image: "https://ik.imagekit.io/cubiclogics/Helpdesk-LP/AI%20Copilot%20Assistance.svg",
+            text: "AI-Powered"
         },
         {
-            image : "https://ik.imagekit.io/apps365/Lp-pages/Role%20based%20permissions.svg",
-            text : "Workflow Automation & Alerts  "
+            image: "https://ik.imagekit.io/apps365/Lp-pages/Role%20based%20permissions.svg",
+            text: "Workflow Automation & Alerts  "
         },
         {
-            image : "https://ik.imagekit.io/apps365/Lp-pages/Microsoft%20Teams%20&%20Outlook%20integration.svg",
-            text : "Role-Based Permissions"
+            image: "https://ik.imagekit.io/apps365/Lp-pages/Microsoft%20Teams%20&%20Outlook%20integration.svg",
+            text: "Role-Based Permissions"
         },
         {
-            image : "https://ik.imagekit.io/apps365/Lp-pages/Microsoft%20365%20compliance.svg",
-            text : "Microsoft 365 Integration"
+            image: "https://ik.imagekit.io/apps365/Lp-pages/Microsoft%20365%20compliance.svg",
+            text: "Microsoft 365 Integration"
         },
-         {
-            image : "https://ik.imagekit.io/apps365/Lp-pages/Microsoft%20Entra%20ID%20security.svg",
-            text : "Asset Lifecycle & Governance "
+        {
+            image: "https://ik.imagekit.io/apps365/Lp-pages/Microsoft%20Entra%20ID%20security.svg",
+            text: "Asset Lifecycle & Governance "
         },
     ]
 
     const workBoxs = [
         {
-            image : "https://ik.imagekit.io/cubiclogics/Apps365/CLM/Approval-through-Emails.svg?updatedAt=1768997946170",
-            heading : "Track & Centralize Assets ",
-            text : "Add and manage hardware, software, and business assets in one centralized asset management system. Capture important details including ownership, location, status, and asset information for complete visibility. "
+            image: "https://ik.imagekit.io/cubiclogics/Apps365/CLM/Approval-through-Emails.svg?updatedAt=1768997946170",
+            heading: "Track & Centralize Assets ",
+            text: "Add and manage hardware, software, and business assets in one centralized asset management system. Capture important details including ownership, location, status, and asset information for complete visibility. "
         },
         {
-            image : "https://ik.imagekit.io/cubiclogics/Apps365/CLM/Role-Based%20Security.svg?updatedAt=1768996193300",
-            heading : "Assign & Track Asset Ownership",
-            text : "Manage asset assignments, transfers, and ownership details with accurate tracking of who has each asset and where it is located. Improve accountability with complete asset history and status visibility."
+            image: "https://ik.imagekit.io/cubiclogics/Apps365/CLM/Role-Based%20Security.svg?updatedAt=1768996193300",
+            heading: "Assign & Track Asset Ownership",
+            text: "Manage asset assignments, transfers, and ownership details with accurate tracking of who has each asset and where it is located. Improve accountability with complete asset history and status visibility."
         },
-         {
-            image : "https://ik.imagekit.io/cubiclogics/Apps365/CLM/technology.webp?updatedAt=1765798708952",
-            heading : "Manage Asset Lifecycle",
-            text : "Track assets from acquisition and deployment to maintenance, renewal, and retirement. Maintain accurate records throughout the complete asset lifecycle."
+        {
+            image: "https://ik.imagekit.io/cubiclogics/Apps365/CLM/technology.webp?updatedAt=1765798708952",
+            heading: "Manage Asset Lifecycle",
+            text: "Track assets from acquisition and deployment to maintenance, renewal, and retirement. Maintain accurate records throughout the complete asset lifecycle."
         },
-         {
-            image : "https://ik.imagekit.io/cubiclogics/Apps365/CLM/Operational%20Efficiency.webp?updatedAt=1765803725122",
-            heading : "Monitor, Analyze & Optimize",
-            text : "Gain insights into asset utilization, inventory status, lifecycle performance, depreciation, and activity history through centralized reporting and analytics. Make informed decisions with accurate asset information. "
+        {
+            image: "https://ik.imagekit.io/cubiclogics/Apps365/CLM/Operational%20Efficiency.webp?updatedAt=1765803725122",
+            heading: "Monitor, Analyze & Optimize",
+            text: "Gain insights into asset utilization, inventory status, lifecycle performance, depreciation, and activity history through centralized reporting and analytics. Make informed decisions with accurate asset information. "
         },
     ]
 
     const Aisteps = [
         "Automatically categorize and organize asset records with AI-powered intelligence",
         "Generate context-aware asset summaries and insights in seconds",
-        "Recommend relevant asset actions and next steps based on asset information", 
-        "Use asset history and lifecycle data to support informed management decisions", 
-        "Reduce manual effort by automating repetitive asset tracking and management tasks", 
+        "Recommend relevant asset actions and next steps based on asset information",
+        "Use asset history and lifecycle data to support informed management decisions",
+        "Reduce manual effort by automating repetitive asset tracking and management tasks",
     ]
 
     const [isLightboxOpen, setLightboxOpen] = React.useState(false);
@@ -474,7 +543,7 @@ function Asset365ai() {
     };
     const features = [
         "Built inside Microsoft 365",
-        "AI-Powered Asset Tracking" ,
+        "AI-Powered Asset Tracking",
         "SharePoint-Based Asset Management",
         // "Automated Asset Lifecycle Management", 
         // "IT Inventory Visibility", 
@@ -485,20 +554,20 @@ function Asset365ai() {
     );
 
     const challenges = [
-        "Assets scattered across spreadsheets and disconnected tools", 
-        "Limited visibility into asset ownership, status, and location", 
+        "Assets scattered across spreadsheets and disconnected tools",
+        "Limited visibility into asset ownership, status, and location",
         "Manual tracking leads to outdated or inaccurate asset records",
-        "Difficulty managing asset assignments, returns, and lifecycle updates", 
+        "Difficulty managing asset assignments, returns, and lifecycle updates",
         "Missed warranty renewals and asset maintenance deadlines",
-        "Limited reporting makes asset planning and decision-making difficult" 
+        "Limited reporting makes asset planning and decision-making difficult"
     ];
 
     const solutions = [
-        "Centralize every asset record in one Microsoft 365 asset management system with complete visibility", 
-        "Track ownership, assignment, location, status, history, and lifecycle information", 
+        "Centralize every asset record in one Microsoft 365 asset management system with complete visibility",
+        "Track ownership, assignment, location, status, history, and lifecycle information",
         "Manage asset lifecycle from procurement and assignment to return and retirement",
-        "Automate asset requests, approvals, assignments, alerts, reminders, and lifecycle workflows", 
-        "Improve governance, visibility, and reporting with controlled access to accurate asset information", 
+        "Automate asset requests, approvals, assignments, alerts, reminders, and lifecycle workflows",
+        "Improve governance, visibility, and reporting with controlled access to accurate asset information",
     ];
     return (
         <>
@@ -516,7 +585,7 @@ function Asset365ai() {
                                 <h1 className="hero-badge"> AI-Powered Asset Management Software Built for Microsoft 365</h1>
 
                                 <h2 className="hero-heading">
-                                    AI-Powered Asset Management Software to Track, Manage, and Optimize Your IT Assets   
+                                    AI-Powered Asset Management Software to Track, Manage, and Optimize Your IT Assets
                                     {/* <span className="accent"> Smarter Expense Management</span> */}
                                 </h2>
 
@@ -549,7 +618,7 @@ function Asset365ai() {
                                     </div>
 
                                 </div>
-                                {/* <img alt='MainImage' src={"https://ik.imagekit.io/zn4au2jftpm5/hr365/random-images/20944145__1_-removebg-preview%20(1)_8HExemHEKq.png?updatedAt=1708084034004"} /> */}  
+                                {/* <img alt='MainImage' src={"https://ik.imagekit.io/zn4au2jftpm5/hr365/random-images/20944145__1_-removebg-preview%20(1)_8HExemHEKq.png?updatedAt=1708084034004"} /> */}
                             {/* </div> */}
                         </div>
                     </div>
@@ -568,7 +637,7 @@ function Asset365ai() {
                         <div className="sharepoint-container">
                             <div className="sharepoint-header">
                                 <h2 className='HR_heading'>
-                                   Stop Losing Visibility of Your Assets. Manage Everything in One Place. 
+                                    Stop Losing Visibility of Your Assets. Manage Everything in One Place.
                                 </h2>
 
                                 <p>
@@ -591,9 +660,9 @@ function Asset365ai() {
 
                                 <div className="sharepoint-right">
                                     <h3>
-                                      Everything You Need to Run Smarter Asset Management
+                                        Everything You Need to Run Smarter Asset Management
                                     </h3>
-                                    
+
                                     {/* 
                                     <p>
                                        Expense 365 brings receipts, expense submissions, approvals, reimbursements, and reporting into one Microsoft 365-based expense management system. 
@@ -620,12 +689,12 @@ function Asset365ai() {
                         <div className="Meet_AI_Container">
                             <div className="sharepoint-header">
                                 <h2 className='HR_heading'>
-                                  Meet Asset 365 AI Agent 
+                                    Meet Asset 365 AI Agent
                                 </h2>
 
                                 <p>
                                     <strong>AI-Powered Asset Management Assistant Built for Microsoft 365 </strong><br />
-                                   Asset 365 AI AI Agent helps organizations manage assets smarter by automating repetitive tasks, improving asset visibility, and providing intelligent insights across the asset lifecycle. It helps teams analyze asset information, identify relevant details, summarize asset records, and support faster decision-making within the Microsoft 365 ecosystem.
+                                    Asset 365 AI AI Agent helps organizations manage assets smarter by automating repetitive tasks, improving asset visibility, and providing intelligent insights across the asset lifecycle. It helps teams analyze asset information, identify relevant details, summarize asset records, and support faster decision-making within the Microsoft 365 ecosystem.
                                 </p>
                             </div>
                             <div className="sharepoint-content">
@@ -640,69 +709,69 @@ function Asset365ai() {
                                         </div>
                                     ))}
                                 </div>
-                                 <div className="content-right">
-                                    <div className = "tab-image">
+                                <div className="content-right">
+                                    <div className="tab-image">
                                         <img
-                                        decoding="async" src="https://ik.imagekit.io/apps365/Lp-pages/Asset-AI-chat-image.png" title="" alt="CLM"     loading="lazy"
-                                        onClick={() => setShowModal(true)}
+                                            decoding="async" src="https://ik.imagekit.io/apps365/Lp-pages/Asset-AI-chat-image.png" title="" alt="CLM" loading="lazy"
+                                            onClick={() => setShowModal(true)}
                                         />
-                            
+
                                         <div
-                                        className="expand-icon"
-                                        onClick={() => setShowModal(true)}
+                                            className="expand-icon"
+                                            onClick={() => setShowModal(true)}
                                         >
-                                        <FaExpand />
+                                            <FaExpand />
                                         </div>
                                     </div>
-                                </div>  
+                                </div>
                                 {showModal && (
                                     <div className="image-modal" onClick={() => setShowModal(false)}>
-                                    <span className="close-modal" onClick={() => setShowModal(false)}>✕</span>
+                                        <span className="close-modal" onClick={() => setShowModal(false)}>✕</span>
 
-                                    <img className="modal-image "
-                                        decoding="async" src="https://ik.imagekit.io/apps365/Lp-pages/Asset-AI-chat-image.png" title="" alt="Asset"    loading="lazy" onClick={() => setShowModal(true)}
+                                        <img className="modal-image "
+                                            decoding="async" src="https://ik.imagekit.io/apps365/Lp-pages/Asset-AI-chat-image.png" title="" alt="Asset" loading="lazy" onClick={() => setShowModal(true)}
                                         />
                                     </div>
-                                )} 
+                                )}
                             </div>
-                           <div class="HR_PrimaryButton">
-                            <div style={{ display: "flex", justifyContent: "center", textAlign: "center", marginTop: "40px" }}>
-                                <DemoButtons LMS365="LMS365"  demobtnText="See Asset 365 in Action" />
+                            <div class="HR_PrimaryButton">
+                                <div style={{ display: "flex", justifyContent: "center", textAlign: "center", marginTop: "40px" }}>
+                                    <DemoButtons LMS365="LMS365" demobtnText="See Asset 365 in Action" />
+                                </div>
                             </div>
-                        </div>
                         </div>
                     </section>
                     <div>
                         <TabsWithImage tabs={tabs} />
                     </div>
- 
+
                     <div className="why-choose-container">
                         <div className="sharepoint-header">
                             <h2 className='HR_heading'>
-                              Why Choose Microsoft 365 for Asset Management? 
+                                Why Choose Microsoft 365 for Asset Management?
                             </h2>
 
-                            <p>Move from fragmented asset records and manual tracking to one intelligent asset management system built for Microsoft 365. Asset 365 helps teams know what assets they have, who has them, where they are, what they’re worth, and what needs attention next.  
+                            <p>Move from fragmented asset records and manual tracking to one intelligent asset management system built for Microsoft 365. Asset 365 helps teams know what assets they have, who has them, where they are, what they’re worth, and what needs attention next.
                             </p>
                         </div>
                         <div className="why-choose-boxs">
                             {Boxs.map((data, index) => (
-                            <div className='boxs' key={index}>
-                                <img decoding="async" src={data.image} title="" alt="clm" loading="lazy" />
-                                <p>{data.text}</p>
-                            </div>
+                                <div className='boxs' key={index}>
+                                    <img decoding="async" src={data.image} title="" alt="clm" loading="lazy" />
+                                    <p>{data.text}</p>
+                                </div>
                             ))}
                         </div>
                     </div>
                     <div id="features" className="IdChanges"></div>
-                    
+
                     <section className="contract-end-to-end">
                         <div className="contract-container">
                             <div className="contract-heading">
                                 <h2 className='HR_heading'>Powerful Asset Management Features Built for Smarter Tracking and Better Control</h2>
 
                                 <p>
-                                  Built on Microsoft 365 to centralize asset records, automate workflows, improve accountability, and manage the complete asset lifecycle with better visibility, governance, and control across your organization. 
+                                    Built on Microsoft 365 to centralize asset records, automate workflows, improve accountability, and manage the complete asset lifecycle with better visibility, governance, and control across your organization.
                                 </p>
                             </div>
 
@@ -728,21 +797,21 @@ function Asset365ai() {
 
 
                 </div>
-        
+
                 <div className='work-section'>
                     <div className="sharepoint-header">
                         <h2 className='HR_heading'>
-                            How Asset 365 Simplifies Asset Management?  
+                            How Asset 365 Simplifies Asset Management?
                         </h2>
 
                         <p>
-                          Asset 365 AI connects every stage of asset management into one structured workflow from asset registration and assignment to lifecycle tracking, AI-powered insights, and reporting, all within your Microsoft 365 environment. 
+                            Asset 365 AI connects every stage of asset management into one structured workflow from asset registration and assignment to lifecycle tracking, AI-powered insights, and reporting, all within your Microsoft 365 environment.
                         </p>
                     </div>
                     <div className='work-info'>
                         {workBoxs.map((item, index) => (
                             <div className='work-box' key={index}>
-                                <img decoding="async" src={item.image} title="" alt="" loading="lazy"/>
+                                <img decoding="async" src={item.image} title="" alt="" loading="lazy" />
                                 <h3>{item.heading}</h3>
                                 <p>{item.text}</p>
                             </div>
@@ -822,7 +891,7 @@ function Asset365ai() {
                             </h2>
 
                             <p className="m365-subtitle">
-                                Works inside SharePoint, Microsoft Teams, Outlook to manage assets without switching between disconnected tools.  
+                                Works inside SharePoint, Microsoft Teams, Outlook to manage assets without switching between disconnected tools.
                             </p>
 
                             <div className="m365-grid">
@@ -843,7 +912,7 @@ function Asset365ai() {
                             </div>
                         </div>
                     </section>
-                </div> 
+                </div>
                 <div id="integration" className="IdChangesIntegration"></div>
 
                 <div className='cybersection' >
@@ -870,11 +939,11 @@ function Asset365ai() {
                 <section className="manage-footer-content">
                     <div className="manage-footer-container">
                         <h2 className="manage-footer-title">
-                           Stop Losing Track of Your Assets. Start Managing Them Smarter  
+                            Stop Losing Track of Your Assets. Start Managing Them Smarter
                         </h2>
 
                         <p className="manage-footer-description">
-                           Replace spreadsheets, manual updates, and disconnected tools with an AI-powered Microsoft 365 asset management platform. Centralize asset tracking, automate workflows, and gain complete visibility across your entire asset lifecycle with Asset 365. 
+                            Replace spreadsheets, manual updates, and disconnected tools with an AI-powered Microsoft 365 asset management platform. Centralize asset tracking, automate workflows, and gain complete visibility across your entire asset lifecycle with Asset 365.
                         </p>
                         {/* <p className="manage-footer-description">
                           Discover how LMS 365 brings courses, learning management, progress tracking, and certifications together inside Microsoft 365. 
