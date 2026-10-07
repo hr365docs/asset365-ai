@@ -704,7 +704,7 @@ function Expense365() {
                                                 Customer Support
                                             </h3>
                                             <p className="easypera">
-                                                Your Support Team merges technical prowess with sincere
+                                                Our support team merges technical prowess with sincere
                                                 care, fostering trust through expertise and empathy.
                                                 They build lasting relationships, transcending mere
                                                 service to create meaningful connections.

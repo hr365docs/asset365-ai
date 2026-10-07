@@ -8,7 +8,7 @@ const FeaturesGrid = () => {
     <div className="easy">
         <div className="card1">
             <h2 className="custom">Customer Support</h2>
-            <p>Your Support Team merges technical prowess with sincere care, fostering trust through expertise and empathy. They build lasting relationships, transcending mere service to create meaningful connections.</p>
+            <p>Our support team merges technical prowess with sincere care, fostering trust through expertise and empathy. They build lasting relationships, transcending mere service to create meaningful connections.</p>
         </div>
         <div className="card2">
             <div className="cd1">

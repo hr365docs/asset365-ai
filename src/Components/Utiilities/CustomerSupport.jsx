@@ -13,7 +13,7 @@ const CustomerSupport = () => {
                         </div>
                     </div>
                     <h3 className="custom" style={{ color: "#2323CE" }}>Customer Support</h3>
-                    <p className='easypera'>Your Support Team merges technical prowess with sincere care, fostering trust through expertise and empathy. They build lasting relationships, transcending mere service to create meaningful connections.</p>
+                    <p className='easypera'>Our support team merges technical prowess with sincere care, fostering trust through expertise and empathy. They build lasting relationships, transcending mere service to create meaningful connections.</p>
                 </div>
             </div>
             <div className="availcard2" >
