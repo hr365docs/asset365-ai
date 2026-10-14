@@ -573,8 +573,8 @@ function Asset365ai() {
         <>
             <HelmetProvider>
                 <Helmet>
-                    <title>AI SharePoint Asset 365 | Smarter IT Tracking</title>
-                    <meta name="description" content="Manage IT assets with AI-powered SharePoint Asset 365. Track assets, improve visibility, and manage the full asset lifecycle in Microsoft 365." />
+                    <title>Asset Management Software | Asset 365 AI</title>
+                    <meta name="description" content="Simplify asset tracking, maintenance, and lifecycle management with Asset 365 AI. Improve visibility, streamline workflows, and manage business assets efficiently." />
                 </Helmet>
                 <ScrollToTop />
                 <Header isComparison={true} />

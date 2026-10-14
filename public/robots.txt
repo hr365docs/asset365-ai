@@ -1,0 +1,11 @@
+# robots.txt for https://asset365.ai/
+
+# Allow crawling of all content across all user agents
+User-agent: *
+
+Disallow:
+
+Allow: /
+# Sitemap location
+
+Sitemap: https://asset365.ai/sitemap.xml
